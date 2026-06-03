@@ -25,17 +25,16 @@ def save_state(url, next_part):
     print(f"[+] تم تحديث الحالة: الجزء القادم هو {next_part}")
 
 def download_youtube_video(url, output_path="downloaded_video.mp4"):
-    print("[+] جاري تحميل فيديو قصص الخواطر عبر الممر الآمن وتخطي تشفير الجودة...")
+    print("[+] جاري تحميل فيديو قصص الخواطر عبر المشغل المدمج وتخطي الحجب...")
     ydl_opts = {
-        # اختيار الجودة التي تدمج الفيديو والصوت بشكل مباشر ومستقر في البيئات السحابية
-        'format': 'bestvideo*[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        # جودة مرنة ومستقرة للبيئات السحابية
+        'format': 'best[ext=mp4]/best',
         'outtmpl': output_path,
         'cookiefile': 'youtube_cookies.txt',
-        # إعداد العميل ليتخطى تماماً فحص الـ n-challenge المعقد عبر استخدام واجهات برمجية مخصصة
+        # استخدام مشغل الويب المدمج (web_embedded) المتوافق تماماً مع الكوكيز وتخطي القيود
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios', 'android'],
-                'player_skip': ['webpage', 'configs']
+                'player_client': ['web_embedded'],
             }
         },
         'quiet': False
