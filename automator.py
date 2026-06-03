@@ -25,10 +25,18 @@ def save_state(url, next_part):
     print(f"[+] تم تحديث الحالة: الجزء القادم هو {next_part}")
 
 def download_youtube_video(url, output_path="downloaded_video.mp4"):
-    print("[+] جاري تحميل فيديو قصص الخواطر من يوتيوب...")
+    print("[+] جاري تحميل فيديو قصص الخواطر بأسلوب تخطي الحظر...")
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': output_path,
+        # إضافة إعدادات التخطي لتقليد عملاء يوتيوب الرسميين على الأجهزة الذكية
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web'],
+                'skip': ['dash', 'hls']
+            }
+        },
+        'quiet': False
     }
     with YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
@@ -37,7 +45,6 @@ def download_youtube_video(url, output_path="downloaded_video.mp4"):
 if __name__ == "__main__":
     url, current_part = load_state()
     
-    # تحسين الفحص ليدعم الروابط المختصرة youtu.be والروابط العادية youtube
     if not url or ("youtube" not in url and "youtu.be" not in url):
         print(f"[-] لا يوجد رابط فيديو صالح في الملفات. الرابط الموجود: {url}")
         exit(0)
