@@ -25,17 +25,12 @@ def save_state(url, next_part):
     print(f"[+] تم تحديث الحالة: الجزء القادم هو {next_part}")
 
 def download_youtube_video(url, output_path="downloaded_video.mp4"):
-    print("[+] جاري تحميل فيديو قصص الخواطر بأسلوب تخطي الحظر...")
+    print("[+] جاري تحميل فيديو قصص الخواطر باستخدام الكوكيز لتخطي الحظر...")
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': output_path,
-        # إضافة إعدادات التخطي لتقليد عملاء يوتيوب الرسميين على الأجهزة الذكية
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web'],
-                'skip': ['dash', 'hls']
-            }
-        },
+        # إجبار الأداة على استخدام كوكيز المتصفح التي قمنا بتمريرها
+        'cookiefile': 'youtube_cookies.txt',
         'quiet': False
     }
     with YoutubeDL(ydl_opts) as ydl:
@@ -96,5 +91,9 @@ if __name__ == "__main__":
             
     next_part_to_run = current_part + uploaded_count
     save_state(url, next_part_to_run)
+    
+    # تنظيف ملفات الكوكيز المؤقتة من السيرفر للأمان بعد الانتهاء
     if os.path.exists(video_file):
         os.remove(video_file)
+    if os.path.exists('youtube_cookies.txt'):
+        os.remove('youtube_cookies.txt')

@@ -4,7 +4,6 @@ on:
   schedule:
     - cron: '0 15 * * *'
   push:
-    # سيشتغل الإجراء الآن فوراً عند رفع أي تعديل على المستودع بالكامل
     branches:
       - main
 
@@ -33,9 +32,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install yt-dlp moviepy tiktok-uploader
 
-    - name: Create Cookies File
+    - name: Create TikTok Cookies File
       run: |
         echo "${{ secrets.TIKTOK_COOKIES }}" > cookies.txt
+
+    - name: Create YouTube Cookies File
+      run: |
+        echo "${{ secrets.YOUTUBE_COOKIES }}" > youtube_cookies.txt
 
     - name: Run Auto Video Split and Upload
       run: python automator.py
