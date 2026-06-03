@@ -25,15 +25,13 @@ def save_state(url, next_part):
     print(f"[+] تم تحديث الحالة: الجزء القادم هو {next_part}")
 
 def download_youtube_video(url, output_path="downloaded_video.mp4"):
-    print("[+] جاري تحميل فيديو قصص الخواطر باستخدام محرك فك التشفير الخارجي...")
+    print("[+] جاري تحميل فيديو قصص الخواطر باستخدام محرك فك التشفير الخارجي المصحح...")
     ydl_opts = {
-        # جودة مرنة تدعم الصيغ المباشرة
         'format': 'bestvideo*[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': output_path,
         'cookiefile': 'youtube_cookies.txt',
-        # تشغيل محرك Node.js الخارجي لحل خوارزمية يوتيوب المحمية
-        'js_runtimes': ['node'],
-        # استخدام عملاء بدلاء مخصصين للبث السلس والتخطي
+        # تصحيح الصيغة لتكون قاموساً (Dict) كما تطلبه الأداة لتشغيل Node.js
+        'js_runtimes': {'node': {}},
         'extractor_args': {
             'youtube': {
                 'player_client': ['android_vr', 'web_embedded'],
