@@ -4,8 +4,9 @@ on:
   schedule:
     - cron: '0 15 * * *'
   push:
-    paths:
-      - 'video_url.txt'
+    # سيشتغل الإجراء الآن فوراً عند رفع أي تعديل على المستودع بالكامل
+    branches:
+      - main
 
 jobs:
   run-automation:
