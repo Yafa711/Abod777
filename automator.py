@@ -1,7 +1,7 @@
 import os
 import math
 import time
-from yt_dlp import YoutubeDL
+import requests
 from moviepy import VideoFileClip
 
 STATE_FILE = "state.txt"
@@ -25,22 +25,63 @@ def save_state(url, next_part):
     print(f"[+] تم تحديث الحالة: الجزء القادم هو {next_part}")
 
 def download_youtube_video(url, output_path="downloaded_video.mp4"):
-    print("[+] جاري تحميل فيديو قصص الخواطر باستخدام محرك فك التشفير الخارجي المصحح...")
-    ydl_opts = {
-        'format': 'bestvideo*[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'outtmpl': output_path,
-        'cookiefile': 'youtube_cookies.txt',
-        # تصحيح الصيغة لتكون قاموساً (Dict) كما تطلبه الأداة لتشغيل Node.js
-        'js_runtimes': {'node': {}},
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android_vr', 'web_embedded'],
-            }
-        },
-        'quiet': False
-    }
-    with YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+    print("[+] جاري سحب الفيديو عبر البوابة البديلة لتخطي تشفير يوتيوب نهائياً...")
+    
+    # استخراج الـ Video ID من الرابط
+    video_id = ""
+    if "youtu.be/" in url:
+        video_id = url.split("youtu.be/")[1].split("?")[0]
+    elif "v=" in url:
+        video_id = url.split("v=")[1].split("&")[0]
+        
+    if not video_id:
+        raise Exception("لم يتم التعرف على معرف الفيديو بالشكل الصحيح")
+
+    # استخدام خوادم انـفـيـديـوس المفتوحة والوسيطة لسحب رابط التحميل المباشر بدون قيود n-challenge
+    instances = [
+        "https://invidious.nerdvpn.de",
+        "https://yewtu.be",
+        "https://invidious.flokinet.to",
+        "https://iv.melmac.space"
+    ]
+    
+    download_url = None
+    for instance in instances:
+        try:
+            print(f"[⏳] محاولة الاتصال بالبوابة الآمنة: {instance}")
+            api_url = f"{instance}/api/v1/videos/{video_id}"
+            response = requests.get(api_url, timeout=15).json()
+            
+            # البحث عن صيغة فيديو mp4 مناسبة تحتوي على الصوت والصورة معاً
+            for fmt in response.get("formatStreams", []):
+                if "mp4" in fmt.get("container", "") and fmt.get("qualityLabel"):
+                    download_url = fmt["url"]
+                    break
+            if download_url:
+                break
+        except Exception:
+            continue
+
+    if not download_url:
+        print("[-] فشل السحب عبر البوابات السريعة، جاري استخدام محرك التحميل الاحتياطي المباشر...")
+        # محرك احتياطي مباشر في حال توقفت المنصات الوسيطة
+        download_url = f"https://co.wuk.sh/api/json"
+        try:
+            res = requests.post(download_url, json={"url": url, "vQuality": "720"}, headers={"Accept": "application/json"}).json()
+            if res.get("url"):
+                download_url = res["url"]
+        except Exception as e:
+            raise Exception(f"جميع محركات التخطي فشلت في الوصول للملف: {e}")
+
+    # تحميل الملف الفعلي إلى السيرفر
+    print("[+] تم العثور على المسار الآمن المباشر، جاري سحب ملف الفيديو الفعلي...")
+    res = requests.get(download_url, stream=True)
+    with open(output_path, "wb") as f:
+        for chunk in res.iter_content(chunk_size=1024*1024):
+            if chunk:
+                f.write(chunk)
+                
+    print("[🎉] اكتمل تحميل الفيديو بنجاح تام وبدون حظر!")
     return output_path
 
 if __name__ == "__main__":
@@ -50,7 +91,11 @@ if __name__ == "__main__":
         print(f"[-] لا يوجد رابط فيديو صالح في الملفات. الرابط الموجود: {url}")
         exit(0)
         
-    video_file = download_youtube_video(url)
+    try:
+        video_file = download_youtube_video(url)
+    except Exception as e:
+        print(f"[-] خطأ حرج أثناء التحميل: {e}")
+        exit(1)
     
     with VideoFileClip(video_file) as clip_for_meta:
         total_duration = clip_for_meta.duration
@@ -100,5 +145,3 @@ if __name__ == "__main__":
     
     if os.path.exists(video_file):
         os.remove(video_file)
-    if os.path.exists('youtube_cookies.txt'):
-        os.remove('youtube_cookies.txt')
