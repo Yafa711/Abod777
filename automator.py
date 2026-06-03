@@ -2,8 +2,7 @@ import os
 import math
 import time
 from yt_dlp import YoutubeDL
-from moviepy.editor import VideoFileClip
-from tiktok_uploader.upload import upload_video
+from moviepy import VideoFileClip
 
 STATE_FILE = "state.txt"
 
@@ -35,17 +34,6 @@ def download_youtube_video(url, output_path="downloaded_video.mp4"):
         ydl.download([url])
     return output_path
 
-def split_video(video_path, segment_length=60):
-    print("[+] جاري معالجة وتقطيع الفيديو بالكامل...")
-    clip = VideoFileClip(video_path)
-    duration = clip.duration
-    num_segments = math.ceil(duration / segment_length)
-    output_files = []
-    for i in range(num_segments):
-        output_files.append((i + 1, i * segment_length, min((i + 1) * segment_length, duration)))
-    clip.close()
-    return output_files, duration
-
 if __name__ == "__main__":
     url, current_part = load_state()
     if not url or "youtube" not in url:
@@ -53,9 +41,10 @@ if __name__ == "__main__":
         exit(0)
         
     video_file = download_youtube_video(url)
-    clip_for_meta = VideoFileClip(video_file)
-    total_duration = clip_for_meta.duration
-    clip_for_meta.close()
+    
+    # استخدام الطريقة المتوافقة مع التحديث الجديد لـ moviepy
+    with VideoFileClip(video_file) as clip_for_meta:
+        total_duration = clip_for_meta.duration
     
     segment_length = 60
     total_parts = math.ceil(total_duration / segment_length)
@@ -74,16 +63,18 @@ if __name__ == "__main__":
         end_time = min(part_num * segment_length, total_duration)
         
         print(f"[-] جاري قص الجزء {part_num}...")
-        main_clip = VideoFileClip(video_file)
-        subclip = main_clip.subclip(start_time, end_time)
         part_filename = f"temp_part_{part_num}.mp4"
-        subclip.write_videofile(part_filename, codec="libx264", audio_codec="aac")
-        main_clip.close()
         
-        caption = f"قصص وخواطر مؤثرة 📖✨ | الجزء {part_num} #خواطر #قصص #foryou #fyp"
+        # فتح وقص وإغلاق الملف بشكل آمن لتجنب استهلاك الذاكرة
+        with VideoFileClip(video_file) as main_clip:
+            subclip = main_clip.subclipped(start_time, end_time)
+            subclip.write_videofile(part_filename, codec="libx264", audio_codec="aac")
+        
+        caption = f"قصص وخواطر مؤثرة 📖✨ | الجزء {part_num} #خواطر #قصص #fyp"
         
         try:
             print(f"[+] جاري رفع الجزء {part_num} إلى تيك توك...")
+            from tiktok_uploader.upload import upload_video
             upload_video(part_filename, description=caption, cookies='cookies.txt')
             print(f"[+] تم رفع الجزء {part_num} بنجاح.")
             uploaded_count += 1
