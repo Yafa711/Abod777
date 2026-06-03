@@ -36,13 +36,14 @@ def download_youtube_video(url, output_path="downloaded_video.mp4"):
 
 if __name__ == "__main__":
     url, current_part = load_state()
-    if not url or "youtube" not in url:
-        print("[-] لا يوجد رابط فيديو صالح في الملفات.")
+    
+    # تحسين الفحص ليدعم الروابط المختصرة youtu.be والروابط العادية youtube
+    if not url or ("youtube" not in url and "youtu.be" not in url):
+        print(f"[-] لا يوجد رابط فيديو صالح في الملفات. الرابط الموجود: {url}")
         exit(0)
         
     video_file = download_youtube_video(url)
     
-    # استخدام الطريقة المتوافقة مع التحديث الجديد لـ moviepy
     with VideoFileClip(video_file) as clip_for_meta:
         total_duration = clip_for_meta.duration
     
@@ -65,7 +66,6 @@ if __name__ == "__main__":
         print(f"[-] جاري قص الجزء {part_num}...")
         part_filename = f"temp_part_{part_num}.mp4"
         
-        # فتح وقص وإغلاق الملف بشكل آمن لتجنب استهلاك الذاكرة
         with VideoFileClip(video_file) as main_clip:
             subclip = main_clip.subclipped(start_time, end_time)
             subclip.write_videofile(part_filename, codec="libx264", audio_codec="aac")
