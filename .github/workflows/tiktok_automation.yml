@@ -22,6 +22,12 @@ jobs:
       with:
         python-version: '3.10'
 
+    # إضافة بيئة تشغيل جافا سكريبت لفك تشفير يوتيوب المحمي (n-challenge)
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
     - name: Install FFmpeg
       run: |
         sudo apt-get update
