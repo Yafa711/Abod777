@@ -35,8 +35,8 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        # تثبت الأداة مع حزمة المساعدة التكميلية لفك القيود
-        pip install --upgrade yt-dlp moviepy tiktok-uploader
+        # إضافة requests هنا لحل المشكلة فوراً مع بقية الحزم الضرورية
+        pip install --upgrade requests moviepy tiktok-uploader yt-dlp
 
     - name: Create TikTok Cookies File
       run: |
