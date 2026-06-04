@@ -18,25 +18,19 @@ else:
     print(f"[-] فشل التحميل، كود الخطأ: {response.status_code}")
     exit(1)
 
-# 2. رفع الفيديو مع تمويه كامل
-print("[+] جاري الرفع إلى تيك توك...")
+# بديل لجزء الرفع والنشر
 try:
-    upload_video(
-        filename='downloaded_video.mp4',
-        description='محتوى رائع! #ترند #TikTok',
-        cookies='cookies.txt',
-        browser='chrome',
-        headless=True,
-        browser_args=[
-            '--no-sandbox', 
-            '--disable-dev-shm-usage',
-            '--window-size=1920,1080',
-            '--disable-blink-features=AutomationControlled',
-            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        ]
-    )
-    print("[+] تم إرسال أمر الرفع بنجاح!")
+    print("[+] بانتظار اختفاء نوافذ تيك توك...")
+    # إجبار البوت على الانتظار 20 ثانية إضافية قبل محاولة الضغط على النشر
+    import time
+    time.sleep(20) 
+    
+    print("[+] جاري الضغط على زر النشر...")
+    # استمر في عملية الرفع كما هي
+    upload_video(...) 
+    
 except Exception as e:
-    print(f"[-] فشل الرفع (قد يكون الحظر مستمراً): {e}")
+    print(f"[-] حدث خطأ في التوقيت: {e}")
+
  
 
