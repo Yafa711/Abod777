@@ -18,7 +18,7 @@ else:
     print(f"[-] فشل التحميل، كود الخطأ: {response.status_code}")
     exit(1)
 
-# 2. رفع الفيديو مع إعدادات تجاوز النوافذ المنبثقة
+# 2. رفع الفيديو مع إضافة إعدادات التجاوز
 print("[+] جاري الرفع إلى تيك توك...")
 try:
     upload_video(
@@ -30,10 +30,12 @@ try:
         browser_args=[
             '--no-sandbox', 
             '--disable-dev-shm-usage',
-            '--window-size=1920,1080' # زيادة حجم الشاشة لتجنب النوافذ الصغيرة
+            '--window-size=1920,1080',
+            '--disable-blink-features=AutomationControlled' # هذا السطر يمنع تيك توك من معرفة أننا روبوت
         ]
     )
-    print("[+] انتهت عملية الرفع!")
+    print("[+] تم إرسال أمر الرفع بنجاح!")
 except Exception as e:
-    print(f"[-] خطأ أثناء الرفع: {e}")
+    print(f"[-] حدث خطأ أثناء الرفع: {e}")
+ 
 
