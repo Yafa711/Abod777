@@ -1,7 +1,7 @@
 import os
 import math
 import time
-import requests
+from yt_dlp import YoutubeDL
 from moviepy import VideoFileClip
 
 STATE_FILE = "state.txt"
@@ -25,63 +25,25 @@ def save_state(url, next_part):
     print(f"[+] تم تحديث الحالة: الجزء القادم هو {next_part}")
 
 def download_youtube_video(url, output_path="downloaded_video.mp4"):
-    print("[+] جاري سحب الفيديو عبر البوابة البديلة لتخطي تشفير يوتيوب نهائياً...")
-    
-    # استخراج الـ Video ID من الرابط
-    video_id = ""
-    if "youtu.be/" in url:
-        video_id = url.split("youtu.be/")[1].split("?")[0]
-    elif "v=" in url:
-        video_id = url.split("v=")[1].split("&")[0]
-        
-    if not video_id:
-        raise Exception("لم يتم التعرف على معرف الفيديو بالشكل الصحيح")
-
-    # استخدام خوادم انـفـيـديـوس المفتوحة والوسيطة لسحب رابط التحميل المباشر بدون قيود n-challenge
-    instances = [
-        "https://invidious.nerdvpn.de",
-        "https://yewtu.be",
-        "https://invidious.flokinet.to",
-        "https://iv.melmac.space"
-    ]
-    
-    download_url = None
-    for instance in instances:
-        try:
-            print(f"[⏳] محاولة الاتصال بالبوابة الآمنة: {instance}")
-            api_url = f"{instance}/api/v1/videos/{video_id}"
-            response = requests.get(api_url, timeout=15).json()
-            
-            # البحث عن صيغة فيديو mp4 مناسبة تحتوي على الصوت والصورة معاً
-            for fmt in response.get("formatStreams", []):
-                if "mp4" in fmt.get("container", "") and fmt.get("qualityLabel"):
-                    download_url = fmt["url"]
-                    break
-            if download_url:
-                break
-        except Exception:
-            continue
-
-    if not download_url:
-        print("[-] فشل السحب عبر البوابات السريعة، جاري استخدام محرك التحميل الاحتياطي المباشر...")
-        # محرك احتياطي مباشر في حال توقفت المنصات الوسيطة
-        download_url = f"https://co.wuk.sh/api/json"
-        try:
-            res = requests.post(download_url, json={"url": url, "vQuality": "720"}, headers={"Accept": "application/json"}).json()
-            if res.get("url"):
-                download_url = res["url"]
-        except Exception as e:
-            raise Exception(f"جميع محركات التخطي فشلت في الوصول للملف: {e}")
-
-    # تحميل الملف الفعلي إلى السيرفر
-    print("[+] تم العثور على المسار الآمن المباشر، جاري سحب ملف الفيديو الفعلي...")
-    res = requests.get(download_url, stream=True)
-    with open(output_path, "wb") as f:
-        for chunk in res.iter_content(chunk_size=1024*1024):
-            if chunk:
-                f.write(chunk)
-                
-    print("[🎉] اكتمل تحميل الفيديو بنجاح تام وبدون حظر!")
+    print("[+] جاري سحب الفيديو عبر محرك الالتفاف وعميل Safari الافتراضي...")
+    ydl_opts = {
+        # صيغة مرنة ومباشرة تناسب السيرفر السحابي
+        'format': 'bestvideo*[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': output_path,
+        'cookiefile': 'youtube_cookies.txt',
+        # استخدام عميل safari المتوافق مع بروتوكولات جيثب الأمنية لمنع NameResolutionError
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['safari', 'web'],
+            }
+        },
+        # إجبار السيرفر على محاولة الاتصال المباشر وفك شفرة العناوين محلياً عبر IPv4 فقط لتفادي مشاكل الـ DNS
+        'source_address': '0.0.0.0',
+        'force_ipv4': True,
+        'quiet': False
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
     return output_path
 
 if __name__ == "__main__":
