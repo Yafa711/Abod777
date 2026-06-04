@@ -18,7 +18,7 @@ else:
     print(f"[-] فشل التحميل، كود الخطأ: {response.status_code}")
     exit(1)
 
-# 2. رفع الفيديو
+# 2. رفع الفيديو مع إعدادات تجاوز النوافذ المنبثقة
 print("[+] جاري الرفع إلى تيك توك...")
 try:
     upload_video(
@@ -27,8 +27,13 @@ try:
         cookies='cookies.txt',
         browser='chrome',
         headless=True,
-        browser_args=['--no-sandbox', '--disable-dev-shm-usage']
+        browser_args=[
+            '--no-sandbox', 
+            '--disable-dev-shm-usage',
+            '--window-size=1920,1080' # زيادة حجم الشاشة لتجنب النوافذ الصغيرة
+        ]
     )
-    print("[+] تم الرفع بنجاح!")
+    print("[+] انتهت عملية الرفع!")
 except Exception as e:
-    print(f"[-] فشل الرفع: {e}")
+    print(f"[-] خطأ أثناء الرفع: {e}")
+
