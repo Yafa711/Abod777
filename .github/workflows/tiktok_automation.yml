@@ -17,6 +17,13 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
+    # خطوة جوهرية لإصلاح اتصال السيرفر بالإنترنت الخارجي وفك حجب المواقع
+    - name: Fix Server DNS and Internet Connection
+      run: |
+        sudo echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+        sudo echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf
+        ping -c 3 google.com || echo "تنبيه: تم تعديل الـ DNS وجاري فحص الاتصال..."
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -35,7 +42,6 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        # إضافة requests هنا لحل المشكلة فوراً مع بقية الحزم الضرورية
         pip install --upgrade requests moviepy tiktok-uploader yt-dlp
 
     - name: Create TikTok Cookies File
