@@ -1,0 +1,4 @@
+requests
+tiktok-uploader
+playwright
+
